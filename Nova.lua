@@ -231,7 +231,28 @@ closeBtn.Parent = titleBar
 
 addCorner(closeBtn, 14)
 
+-- Minimize Button
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Name = "Minimize"
+minimizeBtn.Size = UDim2.new(0,28,0,28)
+minimizeBtn.Position = UDim2.new(1,-72,0.5,-14)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(255,190,0)
+minimizeBtn.Text = ""
+minimizeBtn.BorderSizePixel = 0
+minimizeBtn.Parent = titleBar
+addCorner(minimizeBtn,14)
 
+-- Fullscreen Button
+local fullscreenBtn = Instance.new("TextButton")
+fullscreenBtn.Name = "Fullscreen"
+fullscreenBtn.Size = UDim2.new(0,28,0,28)
+fullscreenBtn.Position = UDim2.new(1,-106,0.5,-14)
+fullscreenBtn.BackgroundColor3 = Color3.fromRGB(40,210,90)
+fullscreenBtn.Text = ""
+fullscreenBtn.BorderSizePixel = 0
+fullscreenBtn.Parent = titleBar
+addCorner(fullscreenBtn,14)
+ 
 closeBtn.MouseButton1Click:Connect(function()
 
 screenGui.Enabled = not screenGui.Enabled
@@ -239,6 +260,133 @@ screenGui.Enabled = not screenGui.Enabled
 end)
 
 
+ 
+-------------------------------------------------
+-- SHOW BUTTON
+-------------------------------------------------
+
+local showButton = Instance.new("TextButton")
+showButton.Size = UDim2.new(0,120,0,40)
+showButton.Position = UDim2.new(.5,-60,1,-70)
+showButton.BackgroundColor3 = C.Accent
+showButton.Text = "Show"
+showButton.TextColor3 = Color3.new(1,1,1)
+showButton.Font = Enum.Font.GothamBold
+showButton.TextSize = 15
+showButton.Visible = false
+showButton.Parent = screenGui
+addCorner(showButton,10)
+
+
+local minimized = false
+
+-------------------------------------------------
+-- MINIMIZE
+-------------------------------------------------
+
+minimizeBtn.MouseButton1Click:Connect(function()
+
+    if minimized then
+        return
+    end
+
+    minimized = true
+
+    TweenService:Create(main,TweenInfo.new(.35,Enum.EasingStyle.Quart,Enum.EasingDirection.In),{
+
+        Size=UDim2.new(0,520,0,0),
+
+        BackgroundTransparency=1
+
+    }):Play()
+
+    task.wait(.35)
+
+    main.Visible=false
+
+    showButton.Visible=true
+    showButton.Size=UDim2.new(0,0,0,0)
+
+    TweenService:Create(showButton,TweenInfo.new(.35,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{
+
+        Size=UDim2.new(0,120,0,40)
+
+    }):Play()
+
+end)
+
+-------------------------------------------------
+-- RESTORE
+-------------------------------------------------
+
+showButton.MouseButton1Click:Connect(function()
+
+    showButton.Visible=true
+
+    TweenService:Create(showButton,TweenInfo.new(.25,Enum.EasingStyle.Back,Enum.EasingDirection.In),{
+
+        Size=UDim2.new(0,0,0,0)
+
+    }):Play()
+
+    task.wait(.25)
+
+    showButton.Visible=false
+
+    main.Visible=true
+    main.Size=UDim2.new(0,520,0,0)
+    main.BackgroundTransparency=1
+
+    TweenService:Create(main,TweenInfo.new(.35,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{
+
+        Size=UDim2.new(0,520,0,440),
+
+        BackgroundTransparency=0
+
+    }):Play()
+
+    minimized=false
+
+end)
+
+-------------------------------------------------
+-- FULLSCREEN
+-------------------------------------------------
+
+local fullscreen=false
+local oldSize=main.Size
+local oldPos=main.Position
+
+fullscreenBtn.MouseButton1Click:Connect(function()
+
+    fullscreen=not fullscreen
+
+    if fullscreen then
+
+        oldSize=main.Size
+        oldPos=main.Position
+
+        TweenService:Create(main,TweenInfo.new(.35,Enum.EasingStyle.Quart),{
+
+            Size=UDim2.new(.95,0,.92,0),
+
+            Position=UDim2.new(.025,0,.04,0)
+
+        }):Play()
+
+    else
+
+        TweenService:Create(main,TweenInfo.new(.35,Enum.EasingStyle.Quart),{
+
+            Size=oldSize,
+
+            Position=oldPos
+
+        }):Play()
+
+    end
+
+end)
 
 -- Tab Bar
 
