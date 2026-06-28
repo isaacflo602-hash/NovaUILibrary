@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 
 local NovaUI = {}
@@ -31,7 +32,7 @@ local function addCorner(parent, radius)
 	c.CornerRadius = UDim.new(0, radius)
 	c.Parent = parent
 	return c
-end
+}
 
 local function addStroke(parent, color, thickness)
 	local s = Instance.new("UIStroke")
@@ -58,7 +59,11 @@ function NovaUI:CreateWindow(titleText)
 	local Window = {
 		CurrentTab = nil,
 		Tabs = {},
-		TabButtons = {}
+		TabButtons = {},
+		IsMinimized = false,
+		IsFullscreen = false,
+		NormalSize = UDim2.new(0, 520, 0, 440),
+		NormalPos = UDim2.new(0.5, -260, 0.5, -220)
 	}
 	
 	-- Main ScreenGui
@@ -71,10 +76,11 @@ function NovaUI:CreateWindow(titleText)
 	-- Main Window Frame
 	local main = Instance.new("Frame")
 	main.Name = "Main"
-	main.Size = UDim2.new(0, 520, 0, 440)
-	main.Position = UDim2.new(0.5, -260, 0.5, -220)
+	main.Size = Window.NormalSize
+	main.Position = Window.NormalPos
 	main.BackgroundColor3 = C.Bg
 	main.BorderSizePixel = 0
+	main.ClipsDescendants = true
 	main.Parent = screenGui
 	addCorner(main, 12)
 	addStroke(main, C.Border, 1)
@@ -96,7 +102,7 @@ function NovaUI:CreateWindow(titleText)
 	titleFix.Parent = titleBar
 
 	local titleLabel = Instance.new("TextLabel")
-	titleLabel.Size = UDim2.new(1, -80, 1, 0)
+	titleLabel.Size = UDim2.new(1, -140, 1, 0)
 	titleLabel.Position = UDim2.new(0, 16, 0, 0)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = titleText or "Nova UI"
@@ -106,19 +112,59 @@ function NovaUI:CreateWindow(titleText)
 	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 	titleLabel.Parent = titleBar
 
+	-- BUTTON CONTAINER FOR WINDOW CONTROLS
+	local btnHolder = Instance.new("Frame")
+	btnHolder.Size = UDim2.new(0, 100, 1, 0)
+	btnHolder.Position = UDim2.new(1, -110, 0, 0)
+	btnHolder.BackgroundTransparency = 1
+	btnHolder.Parent = titleBar
+
+	local btnLayout = Instance.new("UIListLayout")
+	btnLayout.FillDirection = Enum.FillDirection.Horizontal
+	btnLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+	btnLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+	btnLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	btnLayout.Padding = UDim.new(0, 6)
+	btnLayout.Parent = btnHolder
+
+	-- 1. Minimize Button
+	local minBtn = Instance.new("TextButton")
+	minBtn.Name = "Minimize"
+	minBtn.Size = UDim2.new(0, 24, 0, 24)
+	minBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+	minBtn.Text = "-"
+	minBtn.TextColor3 = C.Text
+	minBtn.Font = Enum.Font.GothamBold
+	minBtn.TextSize = 14
+	minBtn.LayoutOrder = 1
+	minBtn.Parent = btnHolder
+	addCorner(minBtn, 12)
+
+	-- 2. Fullscreen Button
+	local maxBtn = Instance.new("TextButton")
+	maxBtn.Name = "Fullscreen"
+	maxBtn.Size = UDim2.new(0, 24, 0, 24)
+	maxBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 110)
+MaxBtn.Text = "▢"
+	maxBtn.TextColor3 = C.Text
+	maxBtn.Font = Enum.Font.GothamBold
+	maxBtn.TextSize = 12
+	maxBtn.LayoutOrder = 2
+	maxBtn.Parent = btnHolder
+	addCorner(maxBtn, 12)
+
+	-- 3. Close Button
 	local closeBtn = Instance.new("TextButton")
 	closeBtn.Name = "Close"
-	closeBtn.Size = UDim2.new(0, 28, 0, 28)
-	closeBtn.Position = UDim2.new(1, -38, 0.5, -14)
+	closeBtn.Size = UDim2.new(0, 24, 0, 24)
 	closeBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-	closeBtn.Text = ""
-	closeBtn.BorderSizePixel = 0
-	closeBtn.Parent = titleBar
-	addCorner(closeBtn, 14)
-	
-	closeBtn.MouseButton1Click:Connect(function()
-		screenGui.Enabled = not screenGui.Enabled
-	end)
+	closeBtn.Text = "×"
+	closeBtn.TextColor3 = C.Text
+	closeBtn.Font = Enum.Font.GothamBold
+	closeBtn.TextSize = 16
+	closeBtn.LayoutOrder = 3
+	closeBtn.Parent = btnHolder
+	addCorner(closeBtn, 12)
 
 	-- Tab Bar
 	local tabBar = Instance.new("Frame")
@@ -147,9 +193,123 @@ function NovaUI:CreateWindow(titleText)
 	contentArea.Parent = main
 	addPadding(contentArea, 0, 4, 0, 0)
 
-	-- Window Dragging Logic
+	-- ═══════════════════════════════════════
+	-- CONFIRMATION MODAL (CLOSE INTERACTION)
+	-- ═══════════════════════════════════════
+	local modalOverlay = Instance.new("TextButton") -- Using TextButton to swallow backend inputs
+	modalOverlay.Name = "ModalOverlay"
+	modalOverlay.Size = UDim2.new(1, 0, 1, 0)
+	modalOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	modalOverlay.BackgroundTransparency = 1 -- Start transparent
+	modalOverlay.Text = ""
+	modalOverlay.AutoButtonColor = false
+	modalOverlay.Visible = false
+	modalOverlay.ZIndex = 100
+	modalOverlay.Parent = main
+
+	local modalFrame = Instance.new("Frame")
+	modalFrame.Size = UDim2.new(0, 320, 0, 140)
+	modalFrame.Position = UDim2.new(0.5, -160, 0.5, -70)
+	modalFrame.BackgroundColor3 = C.Card
+	modalFrame.Parent = modalOverlay
+	addCorner(modalFrame, 10)
+	addStroke(modalFrame, C.Border, 1)
+
+	local modalTitle = Instance.new("TextLabel")
+	modalTitle.Size = UDim2.new(1, 0, 0, 60)
+	modalTitle.BackgroundTransparency = 1
+	modalTitle.Text = "Are you sure you want to\nunload this script?"
+	modalTitle.TextColor3 = C.Text
+	modalTitle.TextSize = 15
+	modalTitle.Font = Enum.Font.GothamMedium
+	modalTitle.Parent = modalFrame
+
+	local yesBtn = Instance.new("TextButton")
+	yesBtn.Size = UDim2.new(0, 120, 0, 36)
+	yesBtn.Position = UDim2.new(0, 25, 1, -50)
+	yesBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+	yesBtn.Text = "Yes, Unload"
+	yesBtn.TextColor3 = C.Text
+	yesBtn.Font = Enum.Font.GothamBold
+	yesBtn.TextSize = 13
+	yesBtn.Parent = modalFrame
+	addCorner(yesBtn, 6)
+
+	local noBtn = Instance.new("TextButton")
+	noBtn.Size = UDim2.new(0, 120, 0, 36)
+	noBtn.Position = UDim2.new(1, -145, 1, -50)
+	noBtn.BackgroundColor3 = C.ActiveTab
+	noBtn.Text = "Cancel"
+	noBtn.TextColor3 = C.Text
+	noBtn.Font = Enum.Font.GothamBold
+	noBtn.TextSize = 13
+	noBtn.Parent = modalFrame
+	addCorner(noBtn, 6)
+
+	-- Close Logic triggering Confirmation Modal
+	closeBtn.MouseButton1Click:Connect(function()
+		modalOverlay.Visible = true
+		TweenService:Create(modalOverlay, TweenInfo.new(0.2), {BackgroundTransparency = 0.5}):Play()
+	end)
+
+	noBtn.MouseButton1Click:Connect(function()
+		local t = TweenService:Create(modalOverlay, TweenInfo.new(0.15), {BackgroundTransparency = 1})
+		t:Play()
+		t.Completed:Connect(function()
+			modalOverlay.Visible = false
+		end)
+	end)
+
+	yesBtn.MouseButton1Click:Connect(function()
+		screenGui:Destroy()
+	end)
+
+	-- Minimize Logic
+	minBtn.MouseButton1Click:Connect(function()
+		Window.IsMinimized = not Window.IsMinimized
+		if Window.IsMinimized then
+			-- If in fullscreen, exit fullscreen first
+			if Window.IsFullscreen then
+				Window.IsFullscreen = false
+				maxBtn.Text = "▢"
+			end
+			TweenService:Create(main, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, main.Size.X.Offset, 0, 44)}):Play()
+			tabBar.Visible = false
+			contentArea.Visible = false
+		else
+			tabBar.Visible = true
+			contentArea.Visible = true
+			local targetSize = Window.IsFullscreen and UDim2.new(1, 0, 1, 0) or Window.NormalSize
+			TweenService:Create(main, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = targetSize}):Play()
+		end
+	end)
+
+	-- Fullscreen Logic
+	maxBtn.MouseButton1Click:Connect(function()
+		if Window.IsMinimized then return end -- Don't maximize if minimized
+		
+		Window.IsFullscreen = not Window.IsFullscreen
+		if Window.IsFullscreen then
+			maxBtn.Text = "❐"
+			-- Save old position if it wasn't already updated dynamically
+			Window.NormalPos = main.Position
+			TweenService:Create(main, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				Size = UDim2.new(1, 0, 1, 0),
+				Position = UDim2.new(0, 0, 0, 0)
+			}):Play()
+		else
+			maxBtn.Text = "▢"
+			TweenService:Create(main, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				Size = Window.NormalSize,
+				Position = Window.NormalPos
+			}):Play()
+		end
+	end)
+
+	-- Window Dragging Logic (Only runs when not Fullscreen)
 	local dragToggle, dragInput, dragStart, startPos
 	titleBar.InputBegan:Connect(function(input)
+		if Window.IsFullscreen then return end
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragToggle = true
 			dragStart = input.Position
@@ -164,15 +324,20 @@ function NovaUI:CreateWindow(titleText)
 	end)
 
 	titleBar.InputChanged:Connect(function(input)
+		if Window.IsFullscreen then return end
 		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
 			dragInput = input
 		end
 	end)
 
 	UIS.InputChanged:Connect(function(input)
-		if input == dragInput and dragToggle then
+		if input == dragInput and dragToggle and not Window.IsFullscreen then
 			local delta = input.Position - dragStart
-			main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+			local newPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+			main.Position = newPos
+			if not Window.IsMinimized then
+				Window.NormalPos = newPos
+			end
 		end
 	end)
 
