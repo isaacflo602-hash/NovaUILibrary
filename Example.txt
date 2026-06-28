@@ -85,6 +85,6 @@ end)
 -- Credits Tab
 local Credits = Window:CreateTab("Credits")
 
-Credits:CreateButton("Made by Isaac", function()
+Credits:CreateButton("Made by hosbeforebros on script blox dont mind my name bru", function()
 	print("Nova UI Library Test")
 end)
