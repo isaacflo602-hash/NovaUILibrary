@@ -199,7 +199,7 @@ titleLabel.Position = UDim2.new(0, 16, 0, 0)
 
 titleLabel.BackgroundTransparency = 1
 
-titleLabel.Text = titleText or "Nova UI"
+titleLabel.Text = titleText or "Nova UI Library"
 
 titleLabel.TextColor3 = C.Text
 
