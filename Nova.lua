@@ -4,9 +4,7 @@ local player = Players.LocalPlayer
 
 local NovaUI = {}
 
--- ═══════════════════════════════════════
--- COLOR PALETTE
--- ═══════════════════════════════════════
+
 local C = {
 	Bg          = Color3.fromRGB(15, 15, 26),
 	Card        = Color3.fromRGB(26, 26, 46),
@@ -20,11 +18,10 @@ local C = {
 	ToggleOff   = Color3.fromRGB(50, 50, 80),
 	ToggleOn    = Color3.fromRGB(124, 92, 252),
 	HoverCard   = Color3.fromRGB(36, 36, 60),
+	SliderTrack = Color3.fromRGB(35, 35, 58),
 }
 
--- ═══════════════════════════════════════
--- HELPERS
--- ═══════════════════════════════════════
+
 local function addCorner(parent, radius)
 	local c = Instance.new("UICorner")
 	c.CornerRadius = UDim.new(0, radius)
@@ -50,9 +47,7 @@ local function addPadding(parent, left, top, right, bottom)
 	return p
 end
 
--- ═══════════════════════════════════════
--- LIBRARY METHODS
--- ═══════════════════════════════════════
+
 function NovaUI:CreateWindow(titleText)
 	local Window = {
 		CurrentTab = nil,
@@ -60,14 +55,12 @@ function NovaUI:CreateWindow(titleText)
 		TabButtons = {}
 	}
 	
-	-- Main ScreenGui
+	
 	local screenGui = Instance.new("ScreenGui")
 	screenGui.Name = "NovaUI_Instance"
 	screenGui.ResetOnSpawn = false
 	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	screenGui.Parent = player:WaitForChild("PlayerGui")
-
-	-- Main Window Frame
+	screenGui.Parent = player:WaitForChild("PlayerGui")e
 	local main = Instance.new("Frame")
 	main.Name = "Main"
 	main.Size = UDim2.new(0, 520, 0, 440)
@@ -77,8 +70,6 @@ function NovaUI:CreateWindow(titleText)
 	main.Parent = screenGui
 	addCorner(main, 12)
 	addStroke(main, C.Border, 1)
-
-	-- Title Bar
 	local titleBar = Instance.new("Frame")
 	titleBar.Name = "TitleBar"
 	titleBar.Size = UDim2.new(1, 0, 0, 44)
@@ -86,14 +77,12 @@ function NovaUI:CreateWindow(titleText)
 	titleBar.BorderSizePixel = 0
 	titleBar.Parent = main
 	addCorner(titleBar, 12)
-
 	local titleFix = Instance.new("Frame")
 	titleFix.Size = UDim2.new(1, 0, 0, 12)
 	titleFix.Position = UDim2.new(0, 0, 1, -12)
 	titleFix.BackgroundColor3 = C.Card
 	titleFix.BorderSizePixel = 0
 	titleFix.Parent = titleBar
-
 	local titleLabel = Instance.new("TextLabel")
 	titleLabel.Size = UDim2.new(1, -80, 1, 0)
 	titleLabel.Position = UDim2.new(0, 16, 0, 0)
@@ -104,7 +93,6 @@ function NovaUI:CreateWindow(titleText)
 	titleLabel.Font = Enum.Font.GothamBold
 	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 	titleLabel.Parent = titleBar
-
 	local closeBtn = Instance.new("TextButton")
 	closeBtn.Name = "Close"
 	closeBtn.Size = UDim2.new(0, 28, 0, 28)
@@ -118,8 +106,6 @@ function NovaUI:CreateWindow(titleText)
 	closeBtn.MouseButton1Click:Connect(function()
 		screenGui.Enabled = not screenGui.Enabled
 	end)
-
-	-- Tab Bar
 	local tabBar = Instance.new("Frame")
 	tabBar.Name = "TabBar"
 	tabBar.Size = UDim2.new(1, -24, 0, 36)
@@ -128,7 +114,6 @@ function NovaUI:CreateWindow(titleText)
 	tabBar.BorderSizePixel = 0
 	tabBar.Parent = main
 	addCorner(tabBar, 8)
-
 	local tabListLayout = Instance.new("UIListLayout")
 	tabListLayout.FillDirection = Enum.FillDirection.Horizontal
 	tabListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
@@ -136,8 +121,6 @@ function NovaUI:CreateWindow(titleText)
 	tabListLayout.Padding = UDim.new(0, 4)
 	tabListLayout.Parent = tabBar
 	addPadding(tabBar, 4, 4, 4, 4)
-
-	-- Content Container
 	local contentArea = Instance.new("Frame")
 	contentArea.Name = "ContentArea"
 	contentArea.Size = UDim2.new(1, -24, 1, -104)
@@ -145,8 +128,6 @@ function NovaUI:CreateWindow(titleText)
 	contentArea.BackgroundTransparency = 1
 	contentArea.Parent = main
 	addPadding(contentArea, 0, 4, 0, 0)
-
-	-- Window Dragging Logic
 	local dragToggle, dragInput, dragStart, startPos
 	titleBar.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -174,14 +155,12 @@ function NovaUI:CreateWindow(titleText)
 			main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 		end
 	end)
-
-	-- Tab Creator
 	function Window:CreateTab(tabName)
 		local Tab = {}
 		
 		local btn = Instance.new("TextButton")
 		btn.Name = tabName
-		btn.Size = UDim2.new(0, 112, 1, -0) -- Scaled to fit perfectly
+		btn.Size = UDim2.new(0, 112, 1, 0)
 		btn.BackgroundColor3 = C.TabBar
 		btn.Text = tabName
 		btn.TextColor3 = C.Subtext
@@ -232,10 +211,6 @@ function NovaUI:CreateWindow(titleText)
 			selectThisTab()
 			Window.CurrentTab = tabName
 		end
-
-		-- ═══════════════════════════════════════
-		-- COMPONENT: BUTTON
-		-- ═══════════════════════════════════════
 		function Tab:CreateButton(text, callback)
 			local b = Instance.new("TextButton")
 			b.Size = UDim2.new(1, 0, 0, 40)
@@ -261,9 +236,6 @@ function NovaUI:CreateWindow(titleText)
 			end)
 		end
 
-		-- ═══════════════════════════════════════
-		-- COMPONENT: TOGGLE
-		-- ═══════════════════════════════════════
 		function Tab:CreateToggle(text, default, callback)
 			local state = default or false
 			
@@ -308,6 +280,91 @@ function NovaUI:CreateWindow(titleText)
 				toggleBg.BackgroundColor3 = state and C.ToggleOn or C.ToggleOff
 				circle.Position = state and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)
 				task.spawn(callback, state)
+			end)
+		end
+		function Tab:CreateSlider(text, min, max, default, callback)
+			local container = Instance.new("Frame")
+			container.Size = UDim2.new(1, 0, 0, 48)
+			container.BackgroundColor3 = C.Card
+			container.BorderSizePixel = 0
+			container.Parent = tabFrame
+			addCorner(container, 8)
+
+			local lbl = Instance.new("TextLabel")
+			lbl.Size = UDim2.new(1, -80, 0, 20)
+			lbl.Position = UDim2.new(0, 10, 0, 4)
+			lbl.BackgroundTransparency = 1
+			lbl.Text = text
+			lbl.TextColor3 = C.Text
+			lbl.TextSize = 13
+			lbl.Font = Enum.Font.GothamMedium
+			lbl.TextXAlignment = Enum.TextXAlignment.Left
+			lbl.Parent = container
+
+			local valLabel = Instance.new("TextLabel")
+			valLabel.Size = UDim2.new(0, 60, 0, 20)
+			valLabel.Position = UDim2.new(1, -70, 0, 4)
+			valLabel.BackgroundTransparency = 1
+			valLabel.Text = tostring(default)
+			valLabel.TextColor3 = C.Accent
+			valLabel.TextSize = 13
+			valLabel.Font = Enum.Font.GothamBold
+			valLabel.TextXAlignment = Enum.TextXAlignment.Right
+			valLabel.Parent = container
+
+			local track = Instance.new("Frame")
+			track.Size = UDim2.new(1, -20, 0, 6)
+			track.Position = UDim2.new(0, 10, 0, 30)
+			track.BackgroundColor3 = C.SliderTrack
+			track.BorderSizePixel = 0
+			track.Parent = container
+			addCorner(track, 3)
+
+			local fill = Instance.new("Frame")
+			local startPercent = (default - min) / (max - min)
+			fill.Size = UDim2.new(startPercent, 0, 1, 0)
+			fill.BackgroundColor3 = C.Accent
+			fill.BorderSizePixel = 0
+			fill.Parent = track
+			addCorner(fill, 3)
+
+			local knob = Instance.new("Frame")
+			knob.Size = UDim2.new(0, 14, 0, 14)
+			knob.Position = UDim2.new(startPercent, -7, 0.5, -7)
+			knob.BackgroundColor3 = C.Text
+			knob.BorderSizePixel = 0
+			knob.Parent = track
+			addCorner(knob, 7)
+
+			local dragging = false
+
+			local function updateSlider(inputObj)
+				local relX = math.clamp((inputObj.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
+				fill.Size = UDim2.new(relX, 0, 1, 0)
+				knob.Position = UDim2.new(relX, -7, 0.5, -7)
+				
+				local calculatedValue = math.floor(min + (relX * (max - min)))
+				valLabel.Text = tostring(calculatedValue)
+				task.spawn(callback, calculatedValue)
+			end
+
+			track.InputBegan:Connect(function(inputObj)
+				if inputObj.UserInputType == Enum.UserInputType.MouseButton1 or inputObj.UserInputType == Enum.UserInputType.Touch then
+					dragging = true
+					updateSlider(inputObj)
+				end
+			end)
+
+			UIS.InputEnded:Connect(function(inputObj)
+				if inputObj.UserInputType == Enum.UserInputType.MouseButton1 or inputObj.UserInputType == Enum.UserInputType.Touch then
+					dragging = false
+				end
+			end)
+
+			UIS.InputChanged:Connect(function(inputObj)
+				if dragging and (inputObj.UserInputType == Enum.UserInputType.MouseMovement or inputObj.UserInputType == Enum.UserInputType.Touch) then
+					updateSlider(inputObj)
+				end
 			end)
 		end
 
