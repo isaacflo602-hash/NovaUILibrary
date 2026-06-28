@@ -273,31 +273,47 @@ function NovaUI:CreateWindow(titleText)
         end
     end)
 
- local tabBar = Instance.new("ScrollingFrame")
-    tabBar.Name = "TabBar"
-    tabBar.Size = UDim2.new(1, -24, 0, 36)
-    tabBar.Position = UDim2.new(0, 12, 0, 52)
-    tabBar.BackgroundColor3 = C.TabBar
-    tabBar.BorderSizePixel = 0
-    tabBar.Parent = main
-    addCorner(tabBar, 8)
+local tabBar = Instance.new("ScrollingFrame")
+tabBar.Name = "TabBar"
+tabBar.Size = UDim2.new(1, -24, 0, 36)
+tabBar.Position = UDim2.new(0, 12, 0, 52)
+tabBar.BackgroundColor3 = C.TabBar
+tabBar.BorderSizePixel = 0
+tabBar.Parent = main
+addCorner(tabBar, 8)
 
-    local tabListLayout = Instance.new("UIListLayout")
-    tabListLayout.FillDirection = Enum.FillDirection.Horizontal
-    tabListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-    tabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    tabListLayout.Padding = UDim.new(0, 4)
-    tabListLayout.Parent = tabBar
-    addPadding(tabBar, 4, 4, 4, 4)
+-- 🔥 HORIZONTAL SCROLL FIX
+tabBar.ScrollingDirection = Enum.ScrollingDirection.X
+tabBar.ScrollBarThickness = 3
+tabBar.ScrollingEnabled = true
+tabBar.AutomaticCanvasSize = Enum.AutomaticSize.X
+tabBar.CanvasSize = UDim2.new(0, 0, 0, 0)
+tabBar.ClipsDescendants = true
 
-    local contentArea = Instance.new("Frame")
-    contentArea.Name = "ContentArea"
-    contentArea.Size = UDim2.new(1, -24, 1, -104)
-    contentArea.Position = UDim2.new(0, 12, 0, 96)
-    contentArea.BackgroundTransparency = 1
-    contentArea.Parent = main
-    addPadding(contentArea, 0, 4, 0, 0)
+-- layout (tabs go left → right)
+local tabListLayout = Instance.new("UIListLayout")
+tabListLayout.FillDirection = Enum.FillDirection.Horizontal
+tabListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+tabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+tabListLayout.Padding = UDim.new(0, 4)
+tabListLayout.Parent = tabBar
 
+-- padding inside tab bar
+local tabPadding = Instance.new("UIPadding")
+tabPadding.PaddingLeft = UDim.new(0, 4)
+tabPadding.PaddingRight = UDim.new(0, 4)
+tabPadding.PaddingTop = UDim.new(0, 4)
+tabPadding.PaddingBottom = UDim.new(0, 4)
+tabPadding.Parent = tabBar
+
+-- content area (unchanged)
+local contentArea = Instance.new("Frame")
+contentArea.Name = "ContentArea"
+contentArea.Size = UDim2.new(1, -24, 1, -104)
+contentArea.Position = UDim2.new(0, 12, 0, 96)
+contentArea.BackgroundTransparency = 1
+contentArea.Parent = main
+addPadding(contentArea, 0, 4, 0, 0)
     local dragToggle, dragInput, dragStart, startPos
     titleBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
