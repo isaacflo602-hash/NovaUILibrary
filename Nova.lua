@@ -282,38 +282,18 @@ tabBar.BorderSizePixel = 0
 tabBar.Parent = main
 addCorner(tabBar, 8)
 
--- 🔥 HORIZONTAL SCROLL FIX
+-- 🔥 IMPORTANT SCROLL SETTINGS (HORIZONTAL)
 tabBar.ScrollingDirection = Enum.ScrollingDirection.X
 tabBar.ScrollBarThickness = 3
 tabBar.ScrollingEnabled = true
-tabBar.AutomaticCanvasSize = Enum.AutomaticSize.X
+
+-- THIS is what fixes “no right scrolling”
 tabBar.CanvasSize = UDim2.new(0, 0, 0, 0)
+tabBar.AutomaticCanvasSize = Enum.AutomaticSize.X
+
+-- optional but recommended
 tabBar.ClipsDescendants = true
-
--- layout (tabs go left → right)
-local tabListLayout = Instance.new("UIListLayout")
-tabListLayout.FillDirection = Enum.FillDirection.Horizontal
-tabListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-tabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-tabListLayout.Padding = UDim.new(0, 4)
-tabListLayout.Parent = tabBar
-
--- padding inside tab bar
-local tabPadding = Instance.new("UIPadding")
-tabPadding.PaddingLeft = UDim.new(0, 4)
-tabPadding.PaddingRight = UDim.new(0, 4)
-tabPadding.PaddingTop = UDim.new(0, 4)
-tabPadding.PaddingBottom = UDim.new(0, 4)
-tabPadding.Parent = tabBar
-
--- content area (unchanged)
-local contentArea = Instance.new("Frame")
-contentArea.Name = "ContentArea"
-contentArea.Size = UDim2.new(1, -24, 1, -104)
-contentArea.Position = UDim2.new(0, 12, 0, 96)
-contentArea.BackgroundTransparency = 1
-contentArea.Parent = main
-addPadding(contentArea, 0, 4, 0, 0)
+    
     local dragToggle, dragInput, dragStart, startPos
     titleBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
