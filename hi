@@ -1,0 +1,15 @@
+-- 1. Load the Nova UI Library from your GitHub
+local NovaUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/isaacflo602-hash/NovaUILibrary/main/Nova.lua"))()
+
+-- 2. Create your main window interface
+local myWindow = NovaUI:CreateWindow("Nova Premium")
+
+-- 3. Create the single dedicated tab
+local audioTab = myWindow:CreateTab("Audio Controls")
+
+-- 4. Add the execution trigger inside the tab
+audioTab:CreateButton("Launch Audio Player", function()
+    -- Dynamically executes your exact configurations and handlers from Pastebin
+    loadstring(game:HttpGet("https://pastebin.com/raw/VxTep7jR"))()
+    print("Hide and Seek Extreme Audio Player active!")
+end)
