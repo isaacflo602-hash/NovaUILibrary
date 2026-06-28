@@ -32,7 +32,7 @@ local function addCorner(parent, radius)
 	c.CornerRadius = UDim.new(0, radius)
 	c.Parent = parent
 	return c
-}
+end
 
 local function addStroke(parent, color, thickness)
 	local s = Instance.new("UIStroke")
@@ -145,7 +145,7 @@ function NovaUI:CreateWindow(titleText)
 	maxBtn.Name = "Fullscreen"
 	maxBtn.Size = UDim2.new(0, 24, 0, 24)
 	maxBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 110)
-MaxBtn.Text = "▢"
+	maxBtn.Text = "▢"
 	maxBtn.TextColor3 = C.Text
 	maxBtn.Font = Enum.Font.GothamBold
 	maxBtn.TextSize = 12
@@ -196,11 +196,11 @@ MaxBtn.Text = "▢"
 	-- ═══════════════════════════════════════
 	-- CONFIRMATION MODAL (CLOSE INTERACTION)
 	-- ═══════════════════════════════════════
-	local modalOverlay = Instance.new("TextButton") -- Using TextButton to swallow backend inputs
+	local modalOverlay = Instance.new("TextButton")
 	modalOverlay.Name = "ModalOverlay"
 	modalOverlay.Size = UDim2.new(1, 0, 1, 0)
 	modalOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	modalOverlay.BackgroundTransparency = 1 -- Start transparent
+	modalOverlay.BackgroundTransparency = 1
 	modalOverlay.Text = ""
 	modalOverlay.AutoButtonColor = false
 	modalOverlay.Visible = false
@@ -246,7 +246,6 @@ MaxBtn.Text = "▢"
 	noBtn.Parent = modalFrame
 	addCorner(noBtn, 6)
 
-	-- Close Logic triggering Confirmation Modal
 	closeBtn.MouseButton1Click:Connect(function()
 		modalOverlay.Visible = true
 		TweenService:Create(modalOverlay, TweenInfo.new(0.2), {BackgroundTransparency = 0.5}):Play()
@@ -268,7 +267,6 @@ MaxBtn.Text = "▢"
 	minBtn.MouseButton1Click:Connect(function()
 		Window.IsMinimized = not Window.IsMinimized
 		if Window.IsMinimized then
-			-- If in fullscreen, exit fullscreen first
 			if Window.IsFullscreen then
 				Window.IsFullscreen = false
 				maxBtn.Text = "▢"
@@ -286,12 +284,11 @@ MaxBtn.Text = "▢"
 
 	-- Fullscreen Logic
 	maxBtn.MouseButton1Click:Connect(function()
-		if Window.IsMinimized then return end -- Don't maximize if minimized
+		if Window.IsMinimized then return end
 		
 		Window.IsFullscreen = not Window.IsFullscreen
 		if Window.IsFullscreen then
 			maxBtn.Text = "❐"
-			-- Save old position if it wasn't already updated dynamically
 			Window.NormalPos = main.Position
 			TweenService:Create(main, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 				Size = UDim2.new(1, 0, 1, 0),
@@ -306,7 +303,7 @@ MaxBtn.Text = "▢"
 		end
 	end)
 
-	-- Window Dragging Logic (Only runs when not Fullscreen)
+	-- Window Dragging Logic
 	local dragToggle, dragInput, dragStart, startPos
 	titleBar.InputBegan:Connect(function(input)
 		if Window.IsFullscreen then return end
