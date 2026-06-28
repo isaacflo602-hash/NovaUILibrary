@@ -1,0 +1,90 @@
+local Nova = loadstring(game:HttpGet("https://raw.githubusercontent.com/isaacflo602-hash/NovaUILibrary/main/Nova.lua"))()
+
+local Window = Nova:CreateWindow("Nova UI Test")
+
+-- Main Tab
+local Main = Window:CreateTab("Main")
+
+Main:CreateButton("Print Hello", function()
+	print("Hello from Nova UI!")
+end)
+
+Main:CreateButton("Notify", function()
+	print("Notification button clicked!")
+end)
+
+Main:CreateToggle("God Mode", false, function(state)
+	print("God Mode:", state)
+end)
+
+Main:CreateToggle("Infinite Jump", false, function(state)
+	print("Infinite Jump:", state)
+end)
+
+Main:CreateSlider("WalkSpeed", 16, 100, 16, function(value)
+	local char = game.Players.LocalPlayer.Character
+	if char then
+		local hum = char:FindFirstChildWhichIsA("Humanoid")
+		if hum then
+			hum.WalkSpeed = value
+		end
+	end
+end)
+
+Main:CreateSlider("JumpPower", 50, 200, 50, function(value)
+	local char = game.Players.LocalPlayer.Character
+	if char then
+		local hum = char:FindFirstChildWhichIsA("Humanoid")
+		if hum then
+			hum.UseJumpPower = true
+			hum.JumpPower = value
+		end
+	end
+end)
+
+-- Player Tab
+local Player = Window:CreateTab("Player")
+
+Player:CreateButton("Reset Character", function()
+	game.Players.LocalPlayer.Character:BreakJoints()
+end)
+
+Player:CreateToggle("ESP", false, function(state)
+	print("ESP:", state)
+end)
+
+Player:CreateSlider("Field Of View", 70, 120, 70, function(value)
+	workspace.CurrentCamera.FieldOfView = value
+end)
+
+-- Fun Tab
+local Fun = Window:CreateTab("Fun")
+
+Fun:CreateButton("Jump", function()
+	local hum = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+	if hum then
+		hum.Jump = true
+	end
+end)
+
+Fun:CreateButton("Sit", function()
+	local hum = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+	if hum then
+		hum.Sit = true
+	end
+end)
+
+Fun:CreateToggle("Spin", false, function(state)
+	print("Spin:", state)
+end)
+
+Fun:CreateSlider("Spin Speed", 1, 100, 25, function(value)
+	print("Spin Speed:", value)
+end)
+
+-- Credits Tab
+local Credits = Window:CreateTab("Credits")
+
+Credits:CreateButton("Made by Isaac", function()
+	print("Nova UI Library Test")
+end)
