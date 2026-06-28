@@ -273,7 +273,7 @@ function NovaUI:CreateWindow(titleText)
         end
     end)
 
-    local tabBar = Instance.new("Frame")
+    local tabBar = Instance.new("ScrollingFrame")
     tabBar.Name = "TabBar"
     tabBar.Size = UDim2.new(1, -24, 0, 36)
     tabBar.Position = UDim2.new(0, 12, 0, 52)
