@@ -45,18 +45,18 @@ function NovaUI:CreateWindow(titleText)
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     screenGui.Parent = player:WaitForChild("PlayerGui")
 
-    -- Main Window (Transparent Black)
+    -- Main Window
     local main = Instance.new("Frame")
     main.Name = "Main"
     main.Size = UDim2.new(0, 560, 0, 480)
     main.Position = UDim2.new(0.5, -280, 0.5, -240)
     main.BackgroundColor3 = C.Bg
-    main.BackgroundTransparency = 0.15   -- Transparent black
+    main.BackgroundTransparency = 0.15
     main.BorderSizePixel = 0
     main.ClipsDescendants = true
     main.Parent = screenGui
     addCorner(main, 16)
-    addStroke(main, Color3.fromRGB(124, 92, 252), 1.5, 0.6)
+    addStroke(main, C.Accent, 1.5, 0.6)
 
     -- Title Bar
     local titleBar = Instance.new("Frame")
@@ -154,16 +154,23 @@ function NovaUI:CreateWindow(titleText)
     end)
 
     minimizeBtn.MouseButton1Click:Connect(function()
-        if minimized then return end
-        minimized = true
-        oldSize = main.Size
-        TweenService:Create(main, TweenInfo.new(0.35, Enum.EasingStyle.Quart), {
-            Size = UDim2.new(0, 560, 0, 52),
-            BackgroundTransparency = 0.7
-        }):Play()
+        minimized = not minimized
+        if minimized then
+            oldSize = main.Size
+            TweenService:Create(main, TweenInfo.new(0.35, Enum.EasingStyle.Quart), {
+                Size = UDim2.new(0, 560, 0, 52),
+                BackgroundTransparency = 0.7
+            }):Play()
+        else
+            TweenService:Create(main, TweenInfo.new(0.35, Enum.EasingStyle.Quart), {
+                Size = oldSize,
+                BackgroundTransparency = 0.15
+            }):Play()
+        end
     end)
 
     fullscreenBtn.MouseButton1Click:Connect(function()
+        if minimized then return end
         fullscreen = not fullscreen
         if fullscreen then
             oldSize = main.Size
@@ -180,7 +187,7 @@ function NovaUI:CreateWindow(titleText)
         end
     end)
 
-    -- Drag
+    -- Drag System
     local dragToggle, dragStart, startPos
     titleBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -220,88 +227,10 @@ function NovaUI:CreateWindow(titleText)
 
         local underline = Instance.new("Frame")
         underline.Size = UDim2.new(1, -20, 0, 3)
-        underline.Position = UDim2.new(0.5, - (130-20)/2, 1, -4)
+        underline.Position = UDim2.new(0.5, -55, 1, -4)
         underline.BackgroundColor3 = C.ActiveTab
         underline.BorderSizePixel = 0
         underline.BackgroundTransparency = 1
         underline.Parent = btn
 
-        local tabFrame = Instance.new("ScrollingFrame")
-        tabFrame.Size = UDim2.new(1, 0, 1, 0)
-        tabFrame.BackgroundTransparency = 1
-        tabFrame.ScrollBarThickness = 6
-        tabFrame.ScrollBarImageColor3 = C.Accent
-        tabFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-        tabFrame.Visible = false
-        tabFrame.Parent = contentArea
-
-        local layout = Instance.new("UIListLayout")
-        layout.Padding = UDim.new(0, 14)
-        layout.SortOrder = Enum.SortOrder.LayoutOrder
-        layout.Parent = tabFrame
-
-        Window.Tabs[tabName] = tabFrame
-        Window.TabButtons[tabName] = btn
-
-        local function selectTab()
-            for name, frame in pairs(Window.Tabs) do
-                local active = name == tabName
-                frame.Visible = active
-                
-                local b = Window.TabButtons[name]
-                TweenService:Create(b, TweenInfo.new(0.25), {
-                    BackgroundColor3 = active and C.Card or C.TabBar,
-                    TextColor3 = active and C.Text or C.Subtext
-                }):Play()
-                
-                TweenService:Create(b:FindFirstChildWhichIsA("Frame"), TweenInfo.new(0.3), {
-                    BackgroundTransparency = active and 0 or 1
-                }):Play()
-            end
-        end
-
-        btn.MouseButton1Click:Connect(selectTab)
-        
-        -- Hover
-        btn.MouseEnter:Connect(function()
-            TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.1}):Play()
-        end)
-        btn.MouseLeave:Connect(function()
-            TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.3}):Play()
-        end)
-
-        if not Window.CurrentTab then
-            selectTab()
-            Window.CurrentTab = tabName
-        end
-
-        -- Button, Toggle, Slider functions (same as before, just cleaned)
-        function Tab:CreateButton(text, callback)
-            local b = Instance.new("TextButton")
-            b.Size = UDim2.new(1, 0, 0, 48)
-            b.BackgroundColor3 = C.Accent
-            b.Text = text
-            b.TextColor3 = C.Text
-            b.TextSize = 15
-            b.Font = Enum.Font.GothamSemibold
-            b.BorderSizePixel = 0
-            b.Parent = tabFrame
-            addCorner(b, 12)
-            addStroke(b, C.Accent, 1, 0.5)
-
-            b.MouseButton1Click:Connect(function()
-                task.spawn(callback)
-            end)
-        end
-
-        function Tab:CreateToggle(text, default, callback)
-            -- (Toggle code from previous version - let me know if you want it expanded)
-        end
-
-        return Tab
-    end
-
-    return Window
-end
-
-return NovaUI
+        local tab
