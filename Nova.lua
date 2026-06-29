@@ -116,7 +116,7 @@ function NovaUI:CreateWindow(titleText)
     fullscreenBtn.Parent = titleBar
     addCorner(fullscreenBtn, 10)
 
-    -- Tab Bar
+    -- Tab Bar Container
     local tabBar = Instance.new("ScrollingFrame")
     tabBar.Name = "TabBar"
     tabBar.Size = UDim2.new(1, -24, 0, 46)
@@ -127,15 +127,18 @@ function NovaUI:CreateWindow(titleText)
     tabBar.ScrollBarThickness = 0
     tabBar.AutomaticCanvasSize = Enum.AutomaticSize.X
     tabBar.ScrollingDirection = Enum.ScrollingDirection.X
+    tabBar.ClipsDescendants = false
     tabBar.Parent = main
     addCorner(tabBar, 12)
 
     local tabList = Instance.new("UIListLayout")
     tabList.FillDirection = Enum.FillDirection.Horizontal
+    tabList.VerticalAlignment = Enum.VerticalAlignment.Center
     tabList.Padding = UDim.new(0, 8)
     tabList.SortOrder = Enum.SortOrder.LayoutOrder
     tabList.Parent = tabBar
 
+    -- Content Frame Container
     local contentArea = Instance.new("Frame")
     contentArea.Name = "ContentArea"
     contentArea.Size = UDim2.new(1, -24, 1, -122)
@@ -143,7 +146,7 @@ function NovaUI:CreateWindow(titleText)
     contentArea.BackgroundTransparency = 1
     contentArea.Parent = main
 
-    -- Button Functions
+    -- Main Window Window State Properties
     local minimized = false
     local fullscreen = false
     local oldSize = main.Size
@@ -187,7 +190,7 @@ function NovaUI:CreateWindow(titleText)
         end
     end)
 
-    -- Drag System
+    -- Window Drag System Setup
     local dragToggle, dragStart, startPos
     titleBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -208,29 +211,172 @@ function NovaUI:CreateWindow(titleText)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then dragToggle = false end
     end)
 
-    -- Tab System
+    -- Tab System Methods
     function Window:CreateTab(tabName)
         local Tab = {}
 
         local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(0, 130, 1, 0)
+        btn.Size = UDim2.new(0, 130, 0, 38)
         btn.BackgroundColor3 = C.TabBar
         btn.BackgroundTransparency = 0.3
         btn.Text = tabName
         btn.TextColor3 = C.Subtext
-        btn.TextSize = 14.5
+        btn.TextSize = 14
         btn.Font = Enum.Font.GothamSemibold
+        btn.TextXAlignment = Enum.TextXAlignment.Center
+        btn.TextYAlignment = Enum.TextYAlignment.Center
         btn.BorderSizePixel = 0
         btn.AutoButtonColor = false
+        btn.ClipsDescendants = false
         btn.Parent = tabBar
         addCorner(btn, 10)
 
         local underline = Instance.new("Frame")
+        underline.Name = "Underline"
         underline.Size = UDim2.new(1, -20, 0, 3)
-        underline.Position = UDim2.new(0.5, -55, 1, -4)
+        underline.Position = UDim2.new(0.5, -55, 1, -3)
         underline.BackgroundColor3 = C.ActiveTab
         underline.BorderSizePixel = 0
         underline.BackgroundTransparency = 1
         underline.Parent = btn
 
-        local tab
+        local tabFrame = Instance.new("ScrollingFrame")
+        tabFrame.Size = UDim2.new(1, 0, 1, 0)
+        tabFrame.BackgroundTransparency = 1
+        tabFrame.ScrollBarThickness = 6
+        tabFrame.ScrollBarImageColor3 = C.Accent
+        tabFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        tabFrame.Visible = false
+        tabFrame.Parent = contentArea
+
+        local layout = Instance.new("UIListLayout")
+        layout.Padding = UDim.new(0, 14)
+        layout.SortOrder = Enum.SortOrder.LayoutOrder
+        layout.Parent = tabFrame
+
+        Window.Tabs[tabName] = tabFrame
+        Window.TabButtons[tabName] = btn
+
+        local function selectTab()
+            Window.CurrentTab = tabName
+            
+            for name, frame in pairs(Window.Tabs) do
+                local active = (name == tabName)
+                frame.Visible = active
+                
+                local b = Window.TabButtons[name]
+                if b then
+                    TweenService:Create(b, TweenInfo.new(0.25), {
+                        BackgroundColor3 = active and C.Card or C.TabBar,
+                        TextColor3 = active and C.Text or C.Subtext
+                    }):Play()
+                    
+                    local line = b:FindFirstChild("Underline")
+                    if line then
+                        TweenService:Create(line, TweenInfo.new(0.3), {
+                            BackgroundTransparency = active and 0 or 1
+                        }):Play()
+                    end
+                end
+            end
+        end
+
+        btn.MouseButton1Click:Connect(selectTab)
+        
+        btn.MouseEnter:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.1}):Play()
+        end)
+        btn.MouseLeave:Connect(function()
+            if Window.CurrentTab == tabName then
+                TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
+            else
+                TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.3}):Play()
+            end
+        end)
+
+        if not Window.CurrentTab then
+            selectTab()
+        end
+
+        -- Content Object: Button
+        function Tab:CreateButton(text, callback)
+            local b = Instance.new("TextButton")
+            b.Size = UDim2.new(1, 0, 0, 48)
+            b.BackgroundColor3 = C.Accent
+            b.Text = text
+            b.TextColor3 = C.Text
+            b.TextSize = 15
+            b.Font = Enum.Font.GothamSemibold
+            b.BorderSizePixel = 0
+            b.Parent = tabFrame
+            addCorner(b, 12)
+            addStroke(b, C.Accent, 1, 0.5)
+
+            b.MouseButton1Click:Connect(function()
+                task.spawn(callback)
+            end)
+        end
+
+        -- Content Object: Toggle
+        function Tab:CreateToggle(text, default, callback)
+            local toggled = default or false
+
+            local toggleFrame = Instance.new("TextButton")
+            toggleFrame.Size = UDim2.new(1, 0, 0, 48)
+            toggleFrame.BackgroundColor3 = C.Card
+            toggleFrame.Text = ""
+            toggleFrame.AutoButtonColor = false
+            toggleFrame.Parent = tabFrame
+            addCorner(toggleFrame, 12)
+            addStroke(toggleFrame, C.Border, 1, 0.6)
+
+            local label = Instance.new("TextLabel")
+            label.Size = UDim2.new(1, -60, 1, 0)
+            label.Position = UDim2.new(0, 16, 0, 0)
+            label.BackgroundTransparency = 1
+            label.Text = text
+            label.TextColor3 = C.Text
+            label.TextSize = 15
+            label.Font = Enum.Font.GothamSemibold
+            label.TextXAlignment = Enum.TextXAlignment.Left
+            label.Parent = toggleFrame
+
+            local switch = Instance.new("Frame")
+            switch.Size = UDim2.new(0, 42, 0, 22)
+            switch.Position = UDim2.new(1, -58, 0.5, -11)
+            switch.BackgroundColor3 = toggled and C.ToggleOn or C.ToggleOff
+            switch.Parent = toggleFrame
+            addCorner(switch, 11)
+
+            local indicator = Instance.new("Frame")
+            indicator.Size = UDim2.new(0, 16, 0, 16)
+            indicator.Position = UDim2.new(0, toggled and 23 or 3, 0.5, -8)
+            indicator.BackgroundColor3 = C.Text
+            indicator.Parent = switch
+            addCorner(indicator, 8)
+
+            local function updateToggle()
+                TweenService:Create(switch, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {
+                    BackgroundColor3 = toggled and C.ToggleOn or C.ToggleOff
+                }):Play()
+                TweenService:Create(indicator, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {
+                    Position = UDim2.new(0, toggled and 23 or 3, 0.5, -8)
+                }):Play()
+                task.spawn(callback, toggled)
+            end
+
+            toggleFrame.MouseButton1Click:Connect(function()
+                toggled = not toggled
+                updateToggle()
+            end)
+
+            return toggleFrame
+        end
+
+        return Tab
+    end
+
+    return Window
+end
+
+return NovaUI
