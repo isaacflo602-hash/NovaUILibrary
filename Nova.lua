@@ -184,6 +184,7 @@ function NovaUI:CreateWindow(titleText)
     tabBar.Size = UDim2.new(1, -24, 0, 36)
     tabBar.Position = UDim2.new(0, 12, 0, 52)
     tabBar.BackgroundColor3 = C.TabBar
+    tabBar.Transparency = 0.5
     tabBar.BorderSizePixel = 0
     tabBar.ScrollBarThickness = 0 -- Hides the scrollbar for a cleaner look
     tabBar.CanvasSize = UDim2.new(0, 0, 0, 0)
