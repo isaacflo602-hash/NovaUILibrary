@@ -1,81 +1,108 @@
 local Nova = loadstring(game:HttpGet("https://raw.githubusercontent.com/isaacflo602-hash/NovaUILibrary/main/Nova.lua"))()
+local Window = Nova:CreateWindow("Nova Player Menu")
 
-local Window = Nova:CreateWindow("Nova UI Library Test")
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local lp = Players.LocalPlayer
 
---// Tab 1 - Home
-local Home = Window:CreateTab("Home")
+local wsVal = 16
+local jpVal = 50
+local infJump = false
+local espEnabled = false
+local noclipEnabled = false
 
-Home:CreateButton("Print Hello", function()
-	print("Hello!")
+task.spawn(function()
+    while task.wait(0.1) do
+        pcall(function()
+            if lp.Character and lp.Character:FindFirstChildWhichIsA("Humanoid") then
+                local hum = lp.Character:FindFirstChildWhichIsA("Humanoid")
+                hum.WalkSpeed = wsVal
+                hum.JumpPower = jpVal
+                hum.UseJumpPower = true
+            end
+        end)
+    end
 end)
 
-Home:CreateToggle("Test Toggle", false, function(state)
-	print("Toggle:", state)
+UIS.JumpRequest:Connect(function()
+    if infJump then
+        pcall(function()
+            if lp.Character and lp.Character:FindFirstChildWhichIsA("Humanoid") then
+                lp.Character:FindFirstChildWhichIsA("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end)
+    end
 end)
 
-Home:CreateSlider("Volume", 0, 100, 50, function(value)
-	print("Volume:", value)
+RunService.Stepped:Connect(function()
+    if noclipEnabled and lp.Character then
+        for _, v in pairs(lp.Character:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.CanCollide = false
+            end
+        end
+    end
 end)
 
---// Tab 2 - Player
-local Player = Window:CreateTab("Player")
+local function applyESP(p)
+    if p == lp then return end
+    local function addHighlight(char)
+        task.wait(0.5)
+        if not char:FindFirstChild("NovaESP") then
+            local hl = Instance.new("Highlight")
+            hl.Name = "NovaESP"
+            hl.FillColor = Color3.fromRGB(0, 220, 140)
+            hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+            hl.FillTransparency = 0.5
+            hl.Enabled = espEnabled
+            hl.Parent = char
+        end
+    end
+    if p.Character then addHighlight(p.Character) end
+    p.CharacterAdded:Connect(addHighlight)
+end
 
-Player:CreateButton("Reset Character", function()
-	game.Players.LocalPlayer.Character:BreakJoints()
+for _, v in pairs(Players:GetPlayers()) do applyESP(v) end
+Players.PlayerAdded:Connect(applyESP)
+
+local Movement = Window:CreateTab("Movement")
+
+Movement:CreateSlider("WalkSpeed", 16, 250, 16, function(value)
+    wsVal = value
 end)
 
-Player:CreateToggle("Infinite Jump", false, function(state)
-	print("Infinite Jump:", state)
+Movement:CreateSlider("JumpPower", 50, 300, 50, function(value)
+    jpVal = value
 end)
 
-Player:CreateSlider("WalkSpeed", 16, 100, 16, function(value)
-	local hum = game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
-	if hum then
-		hum.WalkSpeed = value
-	end
+Movement:CreateToggle("Infinite Jump", false, function(state)
+    infJump = state
 end)
 
---// Tab 3 - Combat
-local Combat = Window:CreateTab("Combat")
-
-Combat:CreateButton("Attack", function()
-	print("Attack!")
-end)
-
-Combat:CreateToggle("Auto Attack", false, function(state)
-	print("Auto Attack:", state)
-end)
-
-Combat:CreateSlider("Attack Speed", 1, 20, 5, function(value)
-	print("Attack Speed:", value)
-end)
-
---// Tab 4 - Visuals
 local Visuals = Window:CreateTab("Visuals")
 
-Visuals:CreateButton("Refresh ESP", function()
-	print("ESP Refreshed")
-end)
-
 Visuals:CreateToggle("Player ESP", false, function(state)
-	print("ESP:", state)
+    espEnabled = state
+    for _, p in pairs(Players:GetPlayers()) do
+        if p.Character and p.Character:FindFirstChild("NovaESP") then
+            p.Character.NovaESP.Enabled = state
+        end
+    end
 end)
 
-Visuals:CreateSlider("Brightness", 0, 10, 2, function(value)
-	game.Lighting.Brightness = value
+local Character = Window:CreateTab("Character")
+
+Character:CreateToggle("Noclip", false, function(state)
+    noclipEnabled = state
 end)
 
---// Tab 5 - Misc
-local Misc = Window:CreateTab("Misc")
-
-Misc:CreateButton("Rejoin", function()
-	game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
+Character:CreateButton("Reset Character", function()
+    if lp.Character and lp.Character:FindFirstChildWhichIsA("Humanoid") then
+        lp.Character:FindFirstChildWhichIsA("Humanoid"):BreakJoints()
+    end
 end)
 
-Misc:CreateToggle("Anti AFK", false, function(state)
-	print("Anti AFK:", state)
-end)
-
-Misc:CreateSlider("FOV", 70, 120, 70, function(value)
-	workspace.CurrentCamera.FieldOfView = value
+Character:CreateButton("Rejoin Game", function()
+    game:GetService("TeleportService"):Teleport(game.PlaceId, lp)
 end)
